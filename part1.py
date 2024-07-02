@@ -2,61 +2,72 @@ from typing import List, Tuple
 
 class RSAHandler:
     def __init__(self, publicKey: Tuple[int, int], privateKey: Tuple[int, int]):
-        # ذخیره کردن کلید عمومی و خصوصی
-        self.publicKey = publicKey  # (e, n)
-        self.privateKey = privateKey  # (d, n)
+        self.publicKey = publicKey  # ذخیره کردن کلید عمومی (e, n)
+        self.privateKey = privateKey  # ذخیره کردن کلید خصوصی (d, n)
 
     def encrypt(self, plainText: str) -> str:
-        # رمزنگاری متن ساده با استفاده از کلید عمومی
-        e, n = self.publicKey
-        encryptedText = ""
-        for char in plainText:
-            # تبدیل کاراکتر به عدد صحیح، رمزنگاری و تبدیل به رشته قابل نمایش
-            encryptedChar = str((ord(char) ** e % n))
-            encryptedText += encryptedChar + " "  # اضافه کردن فاصله به عنوان جداکننده
-        return encryptedText.strip()  # حذف فاصله اضافی انتهای رشته
+        try:
+            e, n = self.publicKey
+            encryptedText = ""
+            for char in plainText:
+                encryptedChar = str((ord(char) ** e % n))
+                encryptedText += encryptedChar + " "
+            return encryptedText.strip()
+        except Exception as error:
+            print(f"Encryption failed: {error}")
+            return ""
 
     def decrypt(self, cipherText: str) -> str:
-        # رمزگشایی متن رمز شده با استفاده از کلید خصوصی
-        d, n = self.privateKey
-        decryptedText = ""
-        encryptedChars = cipherText.split()
-        for encryptedChar in encryptedChars:
-            # تبدیل رشته به عدد صحیح، رمزگشایی و تبدیل به کاراکتر
-            decryptedChar = chr((int(encryptedChar) ** d % n))
-            decryptedText += decryptedChar
-        return decryptedText
+        try:
+            d, n = self.privateKey
+            decryptedText = ""
+            encryptedChars = cipherText.split()
+            for encryptedChar in encryptedChars:
+                decryptedChar = chr((int(encryptedChar) ** d % n))
+                decryptedText += decryptedChar
+            return decryptedText
+        except Exception as error:
+            print(f"Decryption failed: {error}")
+            return ""
 
-# تابع برای محاسبه ب.م.م
 def gcd(a: int, b: int) -> int:
-    while b:
-        a, b = b, a % b
-    return a
+    try:
+        while b:
+            a, b = b, a % b
+        return a
+    except Exception as error:
+        print(f"GCD calculation failed: {error}")
+        return 1
 
-# تابع برای محاسبه معکوس ضریبی
 def mod_inverse(e: int, phi: int) -> int:
-    # استفاده از الگوریتم گسترده اقلیدس برای پیدا کردن معکوس ضریبی e به مد φ
-    def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
-        if a == 0:
-            return b, 0, 1
-        gcd, x1, y1 = extended_gcd(b % a, a)
-        x = y1 - (b // a) * x1
-        y = x1
-        return gcd, x, y
+    try:
+        def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
+            if a == 0:
+                return b, 0, 1
+            gcd, x1, y1 = extended_gcd(b % a, a)
+            x = y1 - (b // a) * x1
+            y = x1
+            return gcd, x, y
 
-    gcd, x, _ = extended_gcd(e, phi)
-    if gcd != 1:
-        raise Exception('معکوس ضریبی وجود ندارد')
-    else:
-        return x % phi
+        gcd, x, _ = extended_gcd(e, phi)
+        if gcd != 1:
+            raise Exception('معکوس ضریبی وجود ندارد')
+        else:
+            return x % phi
+    except Exception as error:
+        print(f"Modular inverse calculation failed: {error}")
+        return 1
 
-# تابع برای تولید کلیدهای عمومی و خصوصی RSA
 def generate_keys(p: int, q: int) -> Tuple[Tuple[int, int], Tuple[int, int]]:
-    n = p * q
-    phi = (p - 1) * (q - 1)
-    e = 65537  # انتخاب یک مقدار ثابت رایج برای e
-    d = mod_inverse(e, phi)
-    return (e, n), (d, n)
+    try:
+        n = p * q
+        phi = (p - 1) * (q - 1)
+        e = 65537
+        d = mod_inverse(e, phi)
+        return (e, n), (d, n)
+    except Exception as error:
+        print(f"Key generation failed: {error}")
+        return (0, 0), (0, 0)
 
 # مثال تولید کلیدها و استفاده از کلاس RSAHandler
 p = 61  # عدد اول کوچک برای سادگی
@@ -66,16 +77,42 @@ rsaHandler = RSAHandler(publicKey, privateKey)
 
 # گرفتن ورودی از کاربر و جلوگیری از ورود پیام خالی
 while True:
-    plainText = input("Enter your message: ")
-    if plainText.strip():
-        break
-    else:
-        print("Don't enter empty message!")
+    try:
+        plainText = input("Enter your message: ")
+        if plainText.strip():
+            break
+        else:
+            print("Don't enter empty message!")
+    except Exception as error:
+        print(f"Error reading input: {error}")
 
-# متن ساده برای رمزنگاری
-cipherText = rsaHandler.encrypt(plainText)  # رمزنگاری متن ساده
-decryptedText = rsaHandler.decrypt(cipherText)  # رمزگشایی متن رمز شده
+while True:
+    try:
+        cipherText = rsaHandler.encrypt(plainText)
+        if cipherText:
+            print("Crypted text:", cipherText)
+            decryptedText = rsaHandler.decrypt(cipherText)
+            if decryptedText:
+                print("Decrypted text:", decryptedText)
+        else:
+            print("Encryption failed, please try again.")
+    except Exception as error:
+        print(f"Error in encryption/decryption process: {error}")
 
-print("Main text:", plainText)
-print("Crypted text:", cipherText)
-print("Decrypted text:", decryptedText)
+    # سوال مجدد از کاربر برای ادامه
+    try:
+        choice = input("Do you want to encrypt another message? (yes/no): ").strip().lower()
+        if choice == 'no':
+            break
+        else:
+            while True:
+                try:
+                    plainText = input("Enter your message: ")
+                    if plainText.strip():
+                        break
+                    else:
+                        print("Don't enter empty message!")
+                except Exception as error:
+                    print(f"Error reading input: {error}")
+    except Exception as error:
+        print(f"Error reading choice: {error}")
