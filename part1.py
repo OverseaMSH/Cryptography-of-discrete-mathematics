@@ -1,6 +1,5 @@
 from typing import List, Tuple
 
-
 class RSAHandler:
     def __init__(self, publicKey: Tuple[int, int], privateKey: Tuple[int, int]):
         # ذخیره کردن کلید عمومی و خصوصی
@@ -29,16 +28,12 @@ class RSAHandler:
         return decryptedText
 
 # تابع برای محاسبه ب.م.م
-
-
 def gcd(a: int, b: int) -> int:
     while b:
         a, b = b, a % b
     return a
 
 # تابع برای محاسبه معکوس ضریبی
-
-
 def mod_inverse(e: int, phi: int) -> int:
     # استفاده از الگوریتم گسترده اقلیدس برای پیدا کردن معکوس ضریبی e به مد φ
     def extended_gcd(a: int, b: int) -> Tuple[int, int, int]:
@@ -56,8 +51,6 @@ def mod_inverse(e: int, phi: int) -> int:
         return x % phi
 
 # تابع برای تولید کلیدهای عمومی و خصوصی RSA
-
-
 def generate_keys(p: int, q: int) -> Tuple[Tuple[int, int], Tuple[int, int]]:
     n = p * q
     phi = (p - 1) * (q - 1)
@@ -65,18 +58,22 @@ def generate_keys(p: int, q: int) -> Tuple[Tuple[int, int], Tuple[int, int]]:
     d = mod_inverse(e, phi)
     return (e, n), (d, n)
 
-
 # مثال تولید کلیدها و استفاده از کلاس RSAHandler
 p = 61  # عدد اول کوچک برای سادگی
 q = 53  # عدد اول کوچک برای سادگی
 publicKey, privateKey = generate_keys(p, q)
 rsaHandler = RSAHandler(publicKey, privateKey)
 
-plainText = "Hi habibi"  # متن ساده برای رمزنگاری
-cipherText = rsaHandler.en
+# گرفتن ورودی از کاربر و جلوگیری از ورود پیام خالی
+while True:
+    plainText = input("Enter your message: ")
+    if plainText.strip():
+        break
+    else:
+        print("Don't enter empty message!")
 
-
-crypt(plainText)  # رمزنگاری متن ساده
+# متن ساده برای رمزنگاری
+cipherText = rsaHandler.encrypt(plainText)  # رمزنگاری متن ساده
 decryptedText = rsaHandler.decrypt(cipherText)  # رمزگشایی متن رمز شده
 
 print("Main text:", plainText)
