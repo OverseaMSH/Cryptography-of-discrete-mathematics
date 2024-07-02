@@ -100,19 +100,24 @@ while True:
         print(f"Error in encryption/decryption process: {error}")
 
     # سوال مجدد از کاربر برای ادامه
-    try:
-        choice = input("Do you want to encrypt another message? (yes/no): ").strip().lower()
-        if choice == 'no':
-            break
-        else:
-            while True:
-                try:
-                    plainText = input("Enter your message: ")
-                    if plainText.strip():
-                        break
-                    else:
-                        print("Don't enter empty message!")
-                except Exception as error:
-                    print(f"Error reading input: {error}")
-    except Exception as error:
-        print(f"Error reading choice: {error}")
+    while True:
+        try:
+            choice = input("Do you want to encrypt another message? (yes/no): ").strip().lower()
+            if choice == 'yes':
+                while True:
+                    try:
+                        plainText = input("Enter your message: ")
+                        if plainText.strip():
+                            break
+                        else:
+                            print("Don't enter empty message!")
+                    except Exception as error:
+                        print(f"Error reading input: {error}")
+                break
+            elif choice == 'no':
+                print("Exiting the program.")
+                exit(0)
+            else:
+                print("Please enter 'yes' or 'no'.")
+        except Exception as error:
+            print(f"Error reading choice: {error}")
