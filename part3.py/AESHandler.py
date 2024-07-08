@@ -1,27 +1,37 @@
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 import os
 
+
 class AESHandler:
-    def __init__(self):
-        # ثابت کردن کلید و IV (vector initialization) برای ساده‌سازی (برای کاربرد واقعی توصیه نمی‌شود)
-        self.key = b"This is a 32-byte key for AES encryption."
-        self.iv = os.urandom(16)  # تولید IV تصادفی برای هر رمزنگاری
+    def __init__(self, key: bytes = None):
+        if key is None:
+            self.key = os.urandom(32)  # Generate a 256-bit (32-byte) key
+        else:
+            self.key = key
+        # Generate a random initialization vector (IV)
+        self.iv = os.urandom(16)
 
     def encrypt(self, data: bytes) -> bytes:
-        # ایجاد یک شی AES cipher با حالت CBC
-        cipher = Cipher(algorithms.AES(self.key), modes.CBC(self.iv), backend=default_backend())
-        encryptor = cipher.encryptor()
+        padder = padding.PKCS7(algorithms.AES.block_size).padder()
+        padded_data = padder.update(data) + padder.finalize()
 
-        # رمزنگاری داده‌ها
-        cipher_text = encryptor.update(data) + encryptor.finalize()
-        return cipher_text
+        cipher = Cipher(algorithms.AES(self.key), modes.CBC(
+            self.iv), backend=default_backend())
+        encryptor = cipher.encryptor()
+        cipher_text = encryptor.update(padded_data) + encryptor.finalize()
+        return self.iv + cipher_text
 
     def decrypt(self, cipher_text: bytes) -> bytes:
-        # ایجاد یک شی AES cipher با حالت CBC
-        cipher = Cipher(algorithms.AES(self.key), modes.CBC(self.iv), backend=default_backend())
-        decryptor = cipher.decryptor()
+        iv = cipher_text[:16]
+        cipher_text = cipher_text[16:]
 
-        # رمزگشایی داده‌ها
-        decrypted_data = decryptor.update(cipher_text) + decryptor.finalize()
-        return decrypted_data
+        cipher = Cipher(algorithms.AES(self.key),
+                        modes.CBC(iv), backend=default_backend())
+        decryptor = cipher.decryptor()
+        padded_data = decryptor.update(cipher_text) + decryptor.finalize()
+
+        unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+        data = unpadder.update(padded_data) + unpadder.finalize()
+        return data

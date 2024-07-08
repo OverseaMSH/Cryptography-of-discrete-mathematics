@@ -2,6 +2,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 
+
 class RSAHandler:
     def __init__(self, key_size=2048):
         self.private_key = rsa.generate_private_key(
